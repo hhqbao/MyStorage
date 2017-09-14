@@ -1,0 +1,30 @@
+﻿@model MyStorage.Core.ViewModels.CategoryTypeViewModel
+
+@{
+    ViewBag.Title = "CategoryTypeForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Model.Id == 0)
+{
+    <h2>Add New Category Type</h2>
+}
+else
+{
+    <h2>Update Category Type</h2>
+}
+
+@using (Html.BeginForm("Save", "CategoryTypes"))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(t => t.Id)
+    @Html.HiddenFor(t => t.CategoryId)
+    <div class="form-group">
+        @Html.LabelFor(t => t.Name, new { @class = "control-label" })
+        @Html.TextBoxFor(t => t.Name, new { @class = "form-control" })
+        @Html.ValidationMessageFor(t => t.Name)
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+}
+

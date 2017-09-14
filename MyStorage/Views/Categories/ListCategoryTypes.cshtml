@@ -1,0 +1,56 @@
+﻿@model MyStorage.Core.Models.Category
+
+@{
+    ViewBag.Title = "List Category Types";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@Model.Name Types</h2>
+
+<p>
+    @using (Html.BeginForm("Create", "CategoryTypes"))
+    {
+        @Html.AntiForgeryToken()
+        @Html.Hidden("categoryId", Model.Id)
+        <button type="submit" class="btn btn-link">Add New Type</button>
+    }
+</p>
+
+<table id="category-type-table" class="table table-hover table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Type Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var type in Model.CategoryTypes)
+        {
+            <tr>
+                <td class="text-middle">@type.Id</td>
+                <td class="text-middle">@type.Name</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="@Url.Action("Edit", "CategoryTypes", new {id = type.Id})">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        Edit
+                    </a>
+                    <a class="btn btn-danger btn-sm" href="#">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        Remove
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#category-type-table").DataTable();
+        });
+    </script>
+}
+

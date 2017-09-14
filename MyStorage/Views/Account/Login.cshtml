@@ -1,0 +1,57 @@
+﻿@using MyStorage.Core.ViewModels.Account
+@model MyStorage.Core.ViewModels.Account.LoginViewModel
+@{
+    ViewBag.Title = "Log in";
+}
+
+<div class="row margin-top-30px">
+    <div class="col-md-6 col-md-push-3">
+        <section id="loginForm" class="animated bounceInDown">
+            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+            {
+                @Html.AntiForgeryToken()
+                <h4 class="login-form-heading">
+                    <span class="glyphicon glyphicon-log-in"></span>
+                    Login Form
+                </h4>
+
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="credential-wrap">
+                    <div class="login-form-credential">
+                        <div class="credential-frame">
+                            <div class="input-group">
+                                <span class="input-group-addon" id="sizing-addon2">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                </span>
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email address" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+
+
+                            <div class="input-group">
+                                <span class="input-group-addon" id="sizing-addon2">
+                                    <span class="glyphicon glyphicon-log-in"></span>
+                                </span>
+                                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Password" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+
+                            <div class="checkbox">                                
+                                @Html.CheckBoxFor(m => m.RememberMe)
+                                <label for="RememberMe"><span></span>Remember Me?</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <input type="submit" value="Log in" class="btn btn-primary btn-sm" />
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

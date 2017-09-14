@@ -1,0 +1,89 @@
+﻿@model MyStorage.Core.Dtos.Product.ProductDto
+
+@{
+    ViewBag.Title = "ListPrices";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="table-responsive" ng-controller="PricesController" ng-init="productId = @Model.Id">
+    <section ng-if="views.loadingDialog == true" class="loading-panel-wrap">
+        <div class="loading-panel">
+            <div class="text-center">
+                <img src="~/Content/Images/loading.gif" />
+            </div>
+            <h2 class="text-danger text-center">Please Wait!</h2>
+        </div>
+    </section>
+    <section ng-if="views.confirmDialog == true" class="confirm-dialog-wrap">
+        <div class="confirm-dialog bounce animated">
+            <h2>Confirm Dialog</h2>
+            <p>
+                <span>Are you sure you want to delete this?</span>
+            </p>
+            <button class="btn btn-default pull-right margin-right-20px" ng-click="Cancel()">Cancel</button>
+            <button class="btn btn-danger pull-right margin-right-10px" ng-click="ConfirmDelete()">Confirm</button>
+            <div class="clearfix"></div>
+        </div>
+    </section>
+    <h2>@Model.Name</h2>
+    <form name="priceForm" novalidate>
+        <table datatable="ng" class="table table-striped table-hover table-bordered">
+            <thead>
+            <tr>
+                <th>Units</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="priceDto in priceDtos track by priceDto.Id">
+                <td class="text-middle">
+                    <span ng-if="priceDto != selectedPrice">{{priceDto.Unit}}</span>
+                    <input required ng-if="views.EdittingPrice == true && priceDto == selectedPrice" ng-model="formValues.Unit" type="number" class="form-control"/>
+                </td>
+                <td class="text-middle">
+                    <span ng-if="priceDto != selectedPrice">${{priceDto.Value}}</span>
+                    <input required ng-if="views.EdittingPrice == true && priceDto == selectedPrice" ng-model="formValues.Value" type="number" class="form-control"/>
+                </td>
+                <td class="text-middle">
+                    <button ng-disabled="views.AddingPrice == true" ng-if="views.EdittingPrice == false" class="btn btn-primary btn-sm" ng-click="Edit(priceDtos[$index])">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                        <span class="hidden-xs">Edit</span>
+                    </button>
+                    <button ng-click="Delete(priceDtos[$index])" ng-disabled="views.AddingPrice == true" ng-if="views.EdittingPrice == false" class="btn btn-danger btn-sm">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        <span class="hidden-xs">Remove</span>
+                    </button>
+                    <button ng-if="views.EdittingPrice == true && priceDto == selectedPrice" ng-click="Save()" ng-disabled="priceForm.$invalid || tempPrice.Unit <= 0 || tempPrice.Value <= 0" class="btn btn-info btn-sm">
+                        <span class="glyphicon glyphicon-floppy-disk"></span>
+                        <span class="hidden-xs">Submit</span>
+                    </button>
+                    <button ng-if="views.EdittingPrice == true && priceDto == selectedPrice" class="btn btn-default btn-sm" ng-click="Cancel()">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="hidden-xs">Cancel</span>
+                    </button>
+                </td>
+            </tr>
+
+            <tr ng-if="views.AddingPrice == true">
+                <td><input required ng-model="formValues.Unit" name="productUnit" type="number" class="form-control" placeholder="Units of Selling"/></td>
+                <td><input required ng-model="formValues.Value" name="productValue" type="number" class="form-control" placeholder="Price of Selling"/></td>
+                <td class="text-middle">
+                    <button ng-click="Save()" ng-disabled="priceForm.$invalid || formValues.Unit <= 0 || formValues.Value <= 0" class="btn btn-info btn-sm">
+                        <span class="glyphicon glyphicon-floppy-disk"></span>
+                        <span class="hidden-xs">Submit</span>
+                    </button>
+                    <button class="btn btn-default btn-sm" ng-click="Cancel()">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="hidden-xs">Cancel</span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+    <button ng-if="views.AddingPrice == false && views.EdittingPrice == false" class="btn btn-primary" ng-click="Create()">Add New Price</button>
+</div>
+
+
+

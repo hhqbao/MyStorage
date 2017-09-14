@@ -1,0 +1,1 @@
+﻿var myStoreApp = angular.module("myStoreApp", ["ngRoute", "datatables"]);

@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="~/Content/animate.css" rel="stylesheet" />
+
+</head>
+<body ng-app="myStoreApp">
+    @Html.Partial("_MainNavigation")
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    <script src="~/Scripts/angular.js"></script>
+    <script src="~/Scripts/angular-route.js"></script>
+    <script src="~/Scripts/angular-sanitize.js"></script>
+    <script src="~/Content/Plugins/ckfinder/ckfinder.js"></script>
+    <script src="~/Scripts/angular-datatables.min.js"></script>
+    <script src="~/SPA/AppConfig.js"></script>
+    <script src="~/SPA/Controllers/PricesController.js"></script>
+    <script src="~/SPA/Controllers/ProductsController.js"></script>
+    <script src="~/SPA/Controllers/StocksController.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

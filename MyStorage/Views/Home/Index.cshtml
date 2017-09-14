@@ -1,0 +1,271 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="stockWrap" ng-controller="StocksController">
+    @*Stock List Section*@
+    <section ng-if="views.stockList == true" class="table-responsive">
+        <h2>Stock List</h2>
+        <p>
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-info" type="button">
+                            <span class="glyphicon glyphicon-filter"></span>
+                            Supplier
+                        </button>
+                    </span>
+                    <select class="form-control" ng-change="supplierSelectionChanged()" ng-model="supplierParams.selectedSupplier" ng-options="supplier as supplier.Name for supplier in supplierParams.suppliers"></select>
+                </div>
+            </div>
+
+            @if (Request.IsAuthenticated)
+            {
+                <button class="btn btn-primary" ng-click="addNewStock()">
+                    <span class="glyphicon glyphicon-plus-sign"></span>
+                    Add New Stock
+                </button>
+            }
+        </p>
+
+        <table class="table table-hover table-striped">
+            <thead>
+                <tr>
+                    <th class="text-center">
+                        <span class="glyphicon glyphicon-tasks"></span>
+                    </th>
+                    <th>Product</th>
+                    <th class="hidden-xs">Progress Bar</th>
+                    @if (Request.IsAuthenticated)
+                    {
+                        <th>Actions</th>
+                    }
+                    else
+                    {
+                        <th>Note</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="stock in supplierParams.selectedSupplier.Stocks track by stock.Id">
+                    <td class="text-center">
+                        @if (Request.IsAuthenticated)
+                        {
+                            <button class="btn btn-sm" ng-click="editQuantity(stock)" ng-class="getButtonClass(stock.Quantity)">
+                                {{stock.Quantity}}
+                            </button>
+                        }
+                        else
+                        {
+                            <span ng-class="getTextClass(stock.Quantity)">
+                                <b>
+                                    {{stock.Quantity}}
+                                </b>
+                            </span>
+                        }
+                    </td>
+                    <td class="text-middle stock-product-name">{{stock.Product.Name}}</td>
+                    <td class="text-middle hidden-xs">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped active" ng-class="getProgressBarClass(stock.Quantity)" role="progressbar" 
+                                 aria-valuenow="{{stock.Quantity}}" aria-valuemin="0" aria-valuemax="30" style="min-width:20px; width: {{(stock.Quantity * 100) / 30}}%;">
+                                {{stock.Quantity}}
+                            </div>
+                        </div>
+                    </td>
+                    @if (Request.IsAuthenticated)
+                    {
+                        <td>
+                            <button ng-click="editStock(stock)" class="btn btn-primary btn-sm">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                                <span class="hidden-xs">Edit</span>
+                            </button>
+                            <button ng-click="deleteStock(stock)" class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-trash"></span>
+                                <span class="hidden-xs">Remove</span>
+                            </button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="text-middle">
+                            <b>
+                                <span ng-class="getTextClass(stock.Quantity)">
+                                    <span ng-if="stock.Quantity <= 3">Sold Out!</span>
+                                    <span ng-if="stock.Quantity > 3 && stock.Quantity <= 7">Got Low!</span>
+                                    <span ng-if="stock.Quantity > 7">FULL!</span>
+                                </span>
+                            </b>
+                        </td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    @*Loading Panel Section*@
+    <section ng-if="views.loadingDialog == true" class="loading-panel-wrap">
+        <div class="loading-panel">
+            <div class="text-center">
+                <img src="~/Content/Images/loading.gif" />
+            </div>
+            <h2 class="text-danger text-center">Please Wait!</h2>
+        </div>
+    </section>
+
+    @if (Request.IsAuthenticated)
+    {
+        @*Stock Form Section*@
+        <section ng-if="views.stockForm == true">
+            <div class="panel panel-info margin-top-20px">
+                <div class="panel-heading">
+                    <h3 class="panel-title">{{formParams.title}}</h3>
+                </div>
+                <div class="panel-body">
+                    <form name="stockForm" novalidate>
+                        <div class="form-group">
+                            <label class="control-label">Search for product:</label>
+                            <input ng-change="trackSearchProductName()" ng-model="productParams.searchProductName" type="text" class="form-control" />
+                            <div ng-if="formParams.selectedProduct == null && productParams.products.length > 0" class="product-search-wrap">
+                                <div class="list-group">
+                                    <button ng-if="notInStock(product) == true"
+                                            ng-repeat="product in productParams.products"
+                                            ng-click="selectProduct(product)"
+                                            type="button" class="list-group-item">
+                                        {{product.Name}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section ng-if="formParams.selectedProduct != null">
+                            <div class="form-group">
+                                <label for="stock_barcode" class="control-label">Bar Code</label>
+                                <div class="input-group">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-info" type="button" onclick="startscan('stock_barcode')">
+                                            <span class="glyphicon glyphicon-barcode"></span>
+                                            Scan
+                                        </button>
+                                    </span>
+                                    <input required name="barCode" id="stock_barcode" ng-model="formParams.barCode" type="text" class="form-control" placeholder="Start Scanning Bar Code" />
+                                </div>
+                                <span ng-if="stockForm.barCode.$dirty && stockForm.barCode.$invalid" class="text-danger">
+                                    Bar code is required!
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Stock Code</label>
+                                <input required name="stockCode" ng-model="formParams.stockCode" type="text" class="form-control" />
+                                <span ng-if="stockForm.stockCode.$dirty && stockForm.stockCode.$invalid" class="text-danger">
+                                    Stock code is required!
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label">Quantity</label>
+                                <input required name="quantity" ng-model="formParams.quantity" type="number" pattern="\d*" class="form-control" />
+                                <span ng-if="stockForm.quantity.$dirty" class="text-danger">
+                                    <span ng-if="stockForm.quantity.$invalid">Stock quantity is required!</span>
+                                    <span ng-if="formParams.quantity < 0">Quantity must be equal or greater than zero!</span>
+                                </span>
+                            </div>
+                        </section>
+
+                        <button ng-disabled="stockForm.$invalid || formParams.selectedProduct == null || formParams.quantity < 0"
+                                ng-click="submit()"
+                                type="submit" class="btn btn-primary">
+                            Submit
+                        </button>
+                        <button ng-click="cancel()" class="btn btn-default">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        @*Quantity Form*@
+        <section ng-if="views.changingQuantity == true" class="quantity-panel-wrap">
+            <div class="quantity-panel">
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-btn">
+                            <button ng-disabled="stockParams.tempQuantity <= 0" ng-click="quantityBtnClick(-1)" class="btn btn-info" type="button">
+                                <span class="glyphicon glyphicon-minus"></span>
+                                Minus
+                            </button>
+                        </div>
+                        <input type="text" disabled ng-model="stockParams.tempQuantity" class="form-control text-center" placeholder="Search for...">
+                        <div class="input-group-btn">
+                            <button ng-click="quantityBtnClick(1)" class="btn btn-primary" type="button">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                Plus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group text-center margin-top-20px">
+                    <button class="btn btn-primary" ng-click="quantityBtnClick(2)">Add +2</button>
+                    <button class="btn btn-primary" ng-click="quantityBtnClick(5)">Add +5</button>
+                    <button class="btn btn-primary" ng-click="quantityBtnClick(10)">Add +10</button>
+                </div>
+                <div class="form-group text-center margin-top-20px">
+                    <button ng-disabled="stockParams.tempQuantity < 2" ng-click="quantityBtnClick(-2)" class="btn btn-danger">Get -2</button>
+                    <button ng-disabled="stockParams.tempQuantity < 5" ng-click="quantityBtnClick(-5)" class="btn btn-danger">Get -5</button>
+                    <button class="btn btn-danger" ng-click="stockParams.tempQuantity = 0">Get All</button>
+                </div>
+                <div class="form-group text-center margin-top-30px">
+                    <button ng-disabled="stockParams.tempQuantity == null" ng-click="submitNewQuantity()" class="btn btn-success btn-lg margin-right-10px">
+                        <span class="glyphicon glyphicon-save"></span>
+                        Submit
+                    </button>
+                    <button ng-click="cancel()" class="btn btn-default btn-lg">Cancel</button>
+                </div>
+                <div class="form-group text-center margin-top-30px">
+                    <button ng-if="stockParams.tempQuantity <= 3" ng-disabled="stockParams.tempQuantity == null" ng-click="submitReport()" class="btn btn-warning">
+                        <span class="glyphicon glyphicon-comment"></span>
+                        Submit & Report
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        @*Confirm Panel*@
+        <section ng-if="views.confirmDialog == true" class="confirm-dialog-wrap">
+            <div class="confirm-dialog bounce animated">
+                <h2>Confirm Dialog</h2>
+                <p>
+                    <span>Are you sure you want to delete this?</span>
+                </p>
+                <button class="btn btn-default pull-right margin-right-20px" ng-click="cancel()">Cancel</button>
+                <button class="btn btn-danger pull-right margin-right-10px" ng-click="confirmDelete()">Confirm</button>
+                <div class="clearfix"></div>
+            </div>
+        </section>
+    }
+</div>
+
+@if (Request.IsAuthenticated)
+{
+    @section scripts
+    {
+        <script>
+            $(document).ready(function () {
+                setInterval(function () {
+                    var countBarCode = $("#stock_barcode").length;
+
+                    if (countBarCode > 0) {
+                        $("#stock_barcode").trigger("input");
+                    }
+                },
+                    100);
+            });
+
+            function startscan(barfield) {
+                window.location = "readbarcode://" + barfield;
+            };
+        </script>
+    }
+}

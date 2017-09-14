@@ -1,0 +1,108 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="table-responsive" ng-controller="ProductsController">
+    <section ng-if="views.productList == true">
+        <h2>List of Products</h2>
+
+        <p>
+            <button class="btn btn-primary" ng-click="Create()">Add New Product</button>
+        </p>
+
+        <p>
+            <div class="form-group">
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <button class="btn btn-info" type="button">
+                            <span class="glyphicon glyphicon-filter"></span>
+                            Filter
+                        </button>
+                    </span>
+                    <select class="form-control" ng-model="filter.SelectedCategory" ng-options="categoryDto as categoryDto.Name for categoryDto in filter.CategoryDtos"></select>
+                </div>
+            </div>
+        </p>
+
+        <table id="product-table" datatable="ng" class="table table-hover table-striped table-bordered js-hide-table-filter">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="product in products | filter:filter.SelectedCategory.Name">
+                    <td class="text-middle td-product-name">
+                        <span>{{product.Name}}</span>
+                    </td>
+                    <td class="text-middle td-product-category">
+                        <span ng-if="product.CategoryType != null">{{product.CategoryType.Name}} </span>
+                        <span>{{product.Category.Name}}</span>
+                    </td>
+                    <td class="td-product-actions">
+                        <button class="btn btn-primary btn-sm hidden-xs" ng-click="Edit(product)">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            <span>Edit</span>
+                        </button>
+                        <a class="btn btn-info btn-sm" href="/Products/ListPrices/{{product.Id}}">
+                            <span class="glyphicon glyphicon-list"></span>
+                            <span class="hidden-xs">List Prices</span>
+                        </a>
+                        <button class="btn btn-danger btn-sm" ng-click="Delete(product)">
+                            <span class="glyphicon glyphicon-trash"></span>
+                            <span class="hidden-xs">Remove</span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    <section ng-if="views.productForm == true">
+        <h2>{{formTitle}}</h2>
+
+        <form name="productForm" novalidate>
+            <div class="form-group">
+                <label for="product_name" class="control-label">Product Name</label>
+                <input required ng-model="formValues.Name" id="product_name" name="product_name" type="text" class="form-control" />
+                <span class="text-danger" ng-if="productForm.product_name.$error.required && productForm.product_name.$dirty">
+                    Product name is required.
+                </span>
+            </div>
+            <div class="form-group">
+                <label for="product_categoryId" class="control-label">Category</label>
+                <select id="product_categoryId" name="product_categoryId" class="form-control" ng-change="categorySelectionChange()" ng-model="formValues.selectedCategory" ng-options="categoryDto as categoryDto.Name for categoryDto in categoryDtos"></select>
+                <span class="text-danger" ng-if="formValues.selectedCategory.Id == 0 && productForm.product_categoryId.$dirty">
+                    Must select a category.
+                </span>
+            </div>
+            <div class="form-group" ng-if="formValues.selectedCategory.CategoryTypes.length > 0">
+                <label for="product_categoryTypeId" class="control-label">Type</label>
+                <select id="product_categoryTypeId" name="product_categoryTypeId" class="form-control" ng-model="formValues.selectedType" ng-options="categoryTypeDto as categoryTypeDto.Name for categoryTypeDto in formValues.selectedCategory.CategoryTypes"></select>
+            </div>
+            <button type="submit" class="btn btn-primary" ng-click="saveProduct()" ng-disabled="productForm.$invalid || formValues.selectedCategory.Id == 0">Submit</button>
+            <button class="btn btn-default" ng-click="Cancel()">Cancel</button>
+        </form>
+    </section>
+    <section ng-if="views.confirmDialog == true" class="confirm-dialog-wrap">
+        <div class="confirm-dialog bounce animated">
+            <h2>Confirm Dialog</h2>
+            <p>
+                <span>Are you sure you want to delete this?</span>
+            </p>
+            <button class="btn btn-default pull-right margin-right-20px" ng-click="Cancel()">Cancel</button>
+            <button class="btn btn-danger pull-right margin-right-10px" ng-click="ConfirmDelete()">Confirm</button>
+            <div class="clearfix"></div>
+        </div>
+    </section>
+    <section ng-if="views.loadingDialog == true" class="loading-panel-wrap">
+        <div class="loading-panel">
+            <div class="text-center">
+                <img src="~/Content/Images/loading.gif" />
+            </div>
+            <h2 class="text-danger text-center">Please Wait!</h2>
+        </div>
+    </section>
+</div>

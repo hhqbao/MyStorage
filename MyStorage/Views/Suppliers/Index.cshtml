@@ -1,0 +1,44 @@
+﻿@model IEnumerable<MyStorage.Core.Models.Supplier>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List Of Suppliers</h2>
+
+<p>
+    @Html.ActionLink("Add New Supplier", "Create", "Suppliers")
+</p>
+
+<table id="supplier-table" class="table table-hover table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Supplier Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var supplier in Model)
+        {
+            <tr>
+                <td class="text-middle">@supplier.Code</td>
+                <td class="text-middle">@supplier.Name</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Suppliers",new {id = supplier.Id})" class="btn btn-primary btn-sm">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#supplier-table").DataTable();
+        });
+    </script>
+}
+
